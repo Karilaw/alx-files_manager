@@ -4,30 +4,21 @@ const sha1 = require('sha1');
 
 class UsersController {
   static async postNew(req, res) {
-    const { email, password } = req.body;
+    // ...existing code...
 
-    if (!email) {
-      res.status(400).send({ error: 'Missing email' });
+  }
+
+  static async getMe(req, res) {
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+
+    if (!userId) {
+      res.status(401).send({ error: 'Unauthorized' });
       return;
     }
 
-    if (!password) {
-      res.status(400).send({ error: 'Missing password' });
-      return;
-    }
-
-    const user = await dbClient.users.findOne({ email });
-    if (user) {
-      res.status(400).send({ error: 'Already exist' });
-      return;
-    }
-
-    const newUser = await dbClient.users.insertOne({
-      email,
-      password: sha1(password),
-    });
-
-    res.status(201).send({ id: newUser.insertedId, email });
+    const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(userId) });
+    res.status(200).send({ id: user._id.toString(), email: user.email });
   }
 }
 
