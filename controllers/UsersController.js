@@ -1,4 +1,5 @@
 const dbClient = require('../utils/db');
+const redisClient = require('../utils/redis');
 const sha1 = require('sha1');
 
 class UsersController {
@@ -15,13 +16,13 @@ class UsersController {
       return;
     }
 
-    const user = await dbClient.db.collection('users').findOne({ email });
+    const user = await dbClient.users.findOne({ email });
     if (user) {
       res.status(400).send({ error: 'Already exist' });
       return;
     }
 
-    const newUser = await dbClient.db.collection('users').insertOne({
+    const newUser = await dbClient.users.insertOne({
       email,
       password: sha1(password),
     });
